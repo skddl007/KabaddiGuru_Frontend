@@ -1,0 +1,82 @@
+options:
+  logging: CLOUD_LOGGING_ONLY
+
+substitutions:
+  _REGION: us-central1
+  _SERVICE_NAME: kabaddi-frontend
+  _NEXT_PUBLIC_API_URL: ""
+
+steps:
+  # Load environment variables from config.env
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    id: load-config
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        if [ -f config.env ]; then
+          echo "Loading values from config.env"
+          # shellcheck disable=SC2046
+          export $(grep -E '^(NEXT_PUBLIC_API_URL)=' config.env | xargs)
+          printf "NEXT_PUBLIC_API_URL=%s\n" "${NEXT_PUBLIC_API_URL}" > /workspace/.frontend_env
+        else
+          echo "config.env not found, using default values"
+          touch /workspace/.frontend_env
+        fi
+
+  # Build the frontend container image
+  - name: 'gcr.io/cloud-builders/docker'
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        NEXT_URL="$_NEXT_PUBLIC_API_URL"
+        if [ -z "$NEXT_URL" ] && [ -f /workspace/.frontend_env ]; then
+          source /workspace/.frontend_env || true
+          NEXT_URL="${NEXT_PUBLIC_API_URL}"
+        fi
+        
+        # Default to backend URL if not specified
+        if [ -z "$NEXT_URL" ]; then
+          NEXT_URL="https://kabaddi-backend-324578194548.us-central1.run.app"
+        fi
+        
+        echo "Building with NEXT_PUBLIC_API_URL: $NEXT_URL"
+        
+        docker build \
+          --build-arg NEXT_PUBLIC_API_URL="$NEXT_URL" \
+          -t gcr.io/$PROJECT_ID/kabaddi-frontend:$SHORT_SHA \
+          -t gcr.io/$PROJECT_ID/kabaddi-frontend:latest \
+          .
+    
+  # Push the container image to Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/kabaddi-frontend:$SHORT_SHA']
+    
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/kabaddi-frontend:latest']
+    
+  # Deploy container image to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args: [
+      'run',
+      'deploy',
+      'kabaddi-frontend',
+      '--image', 'gcr.io/$PROJECT_ID/kabaddi-frontend:$SHORT_SHA',
+      '--region', '$_REGION',
+      '--platform', 'managed',
+      '--allow-unauthenticated',
+      '--port', '3000',
+      '--memory', '1Gi',
+      '--cpu', '1',
+      '--max-instances', '10',
+      '--set-env-vars', 'NODE_ENV=production'
+    ]
+
+images:
+  - 'gcr.io/$PROJECT_ID/kabaddi-frontend:$SHORT_SHA'
+  - 'gcr.io/$PROJECT_ID/kabaddi-frontend:latest'
+
+options:
+  machineType: 'E2_MEDIUM'
