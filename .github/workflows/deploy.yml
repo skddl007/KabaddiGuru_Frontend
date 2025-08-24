@@ -37,7 +37,10 @@ jobs:
         fi
 
     - name: Build application
-      run: npm run build
+      run: |
+        # Set the backend URL for build
+        echo "NEXT_PUBLIC_API_URL=https://kabaddi-guru-backend-5uvrtavjca-uc.a.run.app" >> .env.local
+        npm run build
 
   deploy:
     needs: test

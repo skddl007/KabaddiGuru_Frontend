@@ -38,7 +38,7 @@ steps:
         
         # Default to backend URL if not specified
         if [ -z "$NEXT_URL" ]; then
-          NEXT_URL="https://kabaddi-backend-324578194548.us-central1.run.app"
+          NEXT_URL="https://kabaddi-guru-backend-5uvrtavjca-uc.a.run.app"
         fi
         
         echo "Building with NEXT_PUBLIC_API_URL: $NEXT_URL"

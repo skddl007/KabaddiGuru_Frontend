@@ -6,7 +6,11 @@
     "build": "next build",
     "dev": "next dev",
     "lint": "next lint",
-    "start": "next start"
+    "start": "next start",
+    "setup:prod": "bash scripts/setup-env.sh prod",
+    "setup:dev": "bash scripts/setup-env.sh dev",
+    "setup:show": "bash scripts/setup-env.sh show",
+    "deploy": "npm run setup:prod && npm run build"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
