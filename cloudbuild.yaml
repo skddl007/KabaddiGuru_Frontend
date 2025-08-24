@@ -1,10 +1,10 @@
 options:
   logging: CLOUD_LOGGING_ONLY
+  machineType: 'E2_MEDIUM'
 
 substitutions:
   _REGION: us-central1
   _SERVICE_NAME: kabaddi-frontend
-  _NEXT_PUBLIC_API_URL: ""
 
 steps:
   # Load environment variables from config.env
@@ -30,14 +30,11 @@ steps:
     args:
       - -c
       - |
-        NEXT_URL="$_NEXT_PUBLIC_API_URL"
-        if [ -z "$NEXT_URL" ] && [ -f /workspace/.frontend_env ]; then
+        # Get the backend URL from config.env or use default
+        if [ -f /workspace/.frontend_env ]; then
           source /workspace/.frontend_env || true
           NEXT_URL="${NEXT_PUBLIC_API_URL}"
-        fi
-        
-        # Default to backend URL if not specified
-        if [ -z "$NEXT_URL" ]; then
+        else
           NEXT_URL="https://kabaddi-guru-backend-5uvrtavjca-uc.a.run.app"
         fi
         
@@ -77,6 +74,3 @@ steps:
 images:
   - 'gcr.io/$PROJECT_ID/kabaddi-frontend:$SHORT_SHA'
   - 'gcr.io/$PROJECT_ID/kabaddi-frontend:latest'
-
-options:
-  machineType: 'E2_MEDIUM'
