@@ -4,7 +4,6 @@ options:
 
 substitutions:
   _REGION: us-central1
-  _SERVICE_NAME: kabaddi-frontend
 
 steps:
   # Build the frontend container image
