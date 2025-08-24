@@ -7,31 +7,15 @@ substitutions:
   _SERVICE_NAME: kabaddi-frontend
 
 steps:
-  # Prepare build environment
-  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
-    id: prepare-env
-    entrypoint: bash
-    args:
-      - -c
-      - |
-        echo "Preparing build environment..."
-        echo "Backend URL: https://kabaddi-guru-backend-5uvrtavjca-uc.a.run.app"
-
   # Build the frontend container image
   - name: 'gcr.io/cloud-builders/docker'
-    entrypoint: bash
-    args:
-      - -c
-      - |
-        # Set the backend URL
-        BACKEND_URL="https://kabaddi-guru-backend-5uvrtavjca-uc.a.run.app"
-        echo "Building with NEXT_PUBLIC_API_URL: $BACKEND_URL"
-        
-        docker build \
-          --build-arg NEXT_PUBLIC_API_URL="$BACKEND_URL" \
-          -t gcr.io/$PROJECT_ID/kabaddi-frontend:$SHORT_SHA \
-          -t gcr.io/$PROJECT_ID/kabaddi-frontend:latest \
-          .
+    args: [
+      'build',
+      '--build-arg', 'NEXT_PUBLIC_API_URL=https://kabaddi-guru-backend-5uvrtavjca-uc.a.run.app',
+      '-t', 'gcr.io/$PROJECT_ID/kabaddi-frontend:$SHORT_SHA',
+      '-t', 'gcr.io/$PROJECT_ID/kabaddi-frontend:latest',
+      '.'
+    ]
     
   # Push the container image to Container Registry
   - name: 'gcr.io/cloud-builders/docker'
