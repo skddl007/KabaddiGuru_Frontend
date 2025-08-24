@@ -8,43 +8,33 @@ substitutions:
 steps:
   # Build the frontend container image
   - name: 'gcr.io/cloud-builders/docker'
-    entrypoint: bash
-    args:
-      - -c
-      - |
-        # Build with proper tags
-        docker build \
-          --build-arg NEXT_PUBLIC_API_URL=https://kabaddi-guru-backend-5uvrtavjca-uc.a.run.app \
-          -t gcr.io/$PROJECT_ID/kabaddi-frontend:$SHORT_SHA \
-          -t gcr.io/$PROJECT_ID/kabaddi-frontend:latest \
-          .
+    args: [
+      'build',
+      '--build-arg', 'NEXT_PUBLIC_API_URL=https://kabaddi-guru-backend-5uvrtavjca-uc.a.run.app',
+      '-t', 'gcr.io/$PROJECT_ID/kabaddi-frontend:latest',
+      '.'
+    ]
     
   # Push the container image to Container Registry
   - name: 'gcr.io/cloud-builders/docker'
-    entrypoint: bash
-    args:
-      - -c
-      - |
-        # Push both tags
-        docker push gcr.io/$PROJECT_ID/kabaddi-frontend:$SHORT_SHA
-        docker push gcr.io/$PROJECT_ID/kabaddi-frontend:latest
+    args: ['push', 'gcr.io/$PROJECT_ID/kabaddi-frontend:latest']
     
   # Deploy container image to Cloud Run
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-    entrypoint: bash
-    args:
-      - -c
-      - |
-        # Deploy to Cloud Run
-        gcloud run deploy kabaddi-frontend \
-          --image gcr.io/$PROJECT_ID/kabaddi-frontend:$SHORT_SHA \
-          --region $_REGION \
-          --platform managed \
-          --allow-unauthenticated \
-          --port 3000 \
-          --memory 1Gi \
-          --cpu 1 \
-          --max-instances 10 \
-          --set-env-vars NODE_ENV=production
+    entrypoint: gcloud
+    args: [
+      'run',
+      'deploy',
+      'kabaddi-frontend',
+      '--image', 'gcr.io/$PROJECT_ID/kabaddi-frontend:latest',
+      '--region', '$_REGION',
+      '--platform', 'managed',
+      '--allow-unauthenticated',
+      '--port', '3000',
+      '--memory', '1Gi',
+      '--cpu', '1',
+      '--max-instances', '10',
+      '--set-env-vars', 'NODE_ENV=production'
+    ]
 
 
