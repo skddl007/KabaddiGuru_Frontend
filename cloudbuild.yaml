@@ -7,22 +7,15 @@ substitutions:
   _SERVICE_NAME: kabaddi-frontend
 
 steps:
-  # Load environment variables from config.env
+  # Prepare build environment
   - name: gcr.io/google.com/cloudsdktool/cloud-sdk
-    id: load-config
+    id: prepare-env
     entrypoint: bash
     args:
       - -c
       - |
-        if [ -f config.env ]; then
-          echo "Loading values from config.env"
-          # shellcheck disable=SC2046
-          export $(grep -E '^(NEXT_PUBLIC_API_URL)=' config.env | xargs)
-          printf "NEXT_PUBLIC_API_URL=%s\n" "${NEXT_PUBLIC_API_URL}" > /workspace/.frontend_env
-        else
-          echo "config.env not found, using default values"
-          touch /workspace/.frontend_env
-        fi
+        echo "Preparing build environment..."
+        echo "Backend URL: https://kabaddi-guru-backend-5uvrtavjca-uc.a.run.app"
 
   # Build the frontend container image
   - name: 'gcr.io/cloud-builders/docker'
@@ -30,18 +23,12 @@ steps:
     args:
       - -c
       - |
-        # Get the backend URL from config.env or use default
-        if [ -f /workspace/.frontend_env ]; then
-          source /workspace/.frontend_env || true
-          NEXT_URL="${NEXT_PUBLIC_API_URL}"
-        else
-          NEXT_URL="https://kabaddi-guru-backend-5uvrtavjca-uc.a.run.app"
-        fi
-        
-        echo "Building with NEXT_PUBLIC_API_URL: $NEXT_URL"
+        # Set the backend URL
+        BACKEND_URL="https://kabaddi-guru-backend-5uvrtavjca-uc.a.run.app"
+        echo "Building with NEXT_PUBLIC_API_URL: $BACKEND_URL"
         
         docker build \
-          --build-arg NEXT_PUBLIC_API_URL="$NEXT_URL" \
+          --build-arg NEXT_PUBLIC_API_URL="$BACKEND_URL" \
           -t gcr.io/$PROJECT_ID/kabaddi-frontend:$SHORT_SHA \
           -t gcr.io/$PROJECT_ID/kabaddi-frontend:latest \
           .
