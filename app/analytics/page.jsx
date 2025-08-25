@@ -248,14 +248,6 @@ export default function AnalyticsPage() {
     <AuthWrapper>
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       <div className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <Link href="/" className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 mb-4">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Home
-          </Link>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Analytics Dashboard</h1>
-          <p className="text-gray-600">Comprehensive match and player analysis with detailed insights</p>
-        </div>
 
                 {/* Chat Limit Banner */}
         <ChatLimitBanner variant="compact" />
